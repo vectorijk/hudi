@@ -20,11 +20,12 @@ package com.uber.hoodie;
 
 import com.uber.hoodie.common.model.HoodieRecordPayload;
 import com.uber.hoodie.common.util.HoodieAvroUtils;
-import java.io.IOException;
-import java.util.Optional;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.IndexedRecord;
+
+import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Default payload used for delta streamer.
@@ -32,23 +33,23 @@ import org.apache.avro.generic.IndexedRecord;
  * 1. preCombine - Picks the latest delta record for a key, based on an ordering field 2.
  * combineAndGetUpdateValue/getInsertValue - Simply overwrites storage with latest delta record
  */
-public class OverwriteWithLatestAvroPayload extends BaseAvroPayload implements
-    HoodieRecordPayload<OverwriteWithLatestAvroPayload> {
+public class HistoryAvroPayload extends BaseAvroPayload implements
+    HoodieRecordPayload<HistoryAvroPayload> {
 
   /**
    * @param record
    * @param orderingVal
    */
-  public OverwriteWithLatestAvroPayload(GenericRecord record, Comparable orderingVal) {
+  public HistoryAvroPayload(GenericRecord record, Comparable orderingVal) {
     super(record, orderingVal);
   }
 
-  public OverwriteWithLatestAvroPayload(Optional<GenericRecord> record) {
+  public HistoryAvroPayload(Optional<GenericRecord> record) {
     this(record.get(), (record1) -> 0); // natural order
   }
 
   @Override
-  public OverwriteWithLatestAvroPayload preCombine(OverwriteWithLatestAvroPayload another) {
+  public HistoryAvroPayload preCombine(HistoryAvroPayload another) {
     // pick the payload with greatest ordering value
     if (another.orderingVal.compareTo(orderingVal) > 0) {
       return another;
@@ -66,7 +67,7 @@ public class OverwriteWithLatestAvroPayload extends BaseAvroPayload implements
   }
 
   @Override
-  public Optional<IndexedRecord> getInsertValue(Schema schema) throws IOException {
+  public Optional<IndexedRecord> getInsertValue(Schema schema) {
     return Optional.of(HoodieAvroUtils.rewriteRecord(record, schema));
   }
 }
