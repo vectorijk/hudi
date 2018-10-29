@@ -66,13 +66,13 @@ class DataSourceTestMAS extends AssertionsForJUnit {
     val uuid2 = UUID.randomUUID.toString
     // Insert Operation
     val col1: String = s"""{"timestamp": 0.0, "_row_key": "${uuid1}", "name": "p1", "location": 1, "partition": "2015/03/16", "history": [-1]}"""
-    val col3: String = s"""{"timestamp": 1.0, "_row_key": "${uuid1}", "name": "p1", "location": 3, "partition": "2015/03/16", "history": [-1]}"""
-    val col2: String = s"""{"timestamp": 0.0, "_row_key": "${uuid2}", "name": "p2", "location": 2, "partition": "2015/03/16", "history": [-1]}"""
+    val col2: String = s"""{"timestamp": 1.0, "_row_key": "${uuid1}", "name": "p1", "location": 3, "partition": "2015/03/16", "history": [-1]}"""
+    val col3: String = s"""{"timestamp": 0.0, "_row_key": "${uuid2}", "name": "p2", "location": 2, "partition": "2015/03/16", "history": [-1]}"""
     val col4: String = s"""{"timestamp": 1.0, "_row_key": "${uuid2}", "name": "p2", "location": 5, "partition": "2015/03/16", "history": [-1]}"""
 
 //    val tb = List(col1, col2)
 //    val tb = List(col1, col2, col3)
-    val tb = List(col1, col2, col3, col4)
+    val tb = List(col2, col1, col4, col3)
     val inputDF1: Dataset[Row] = spark.read.json(spark.sparkContext.parallelize(tb, 2))
     inputDF1.write.format("com.uber.hoodie")
       .options(commonOpts)
@@ -88,8 +88,8 @@ class DataSourceTestMAS extends AssertionsForJUnit {
     // Read RO View
     val hoodieROViewDF1 = spark.read.format("com.uber.hoodie")
       .load(basePath + "/*/*/*/*");
-    assertEquals(2, hoodieROViewDF1.count())
     hoodieROViewDF1.show()
+    assertEquals(2, hoodieROViewDF1.count())
 
     val col21: String = s"""{"timestamp": 2.0, "_row_key": "${uuid1}", "name": "p1", "location": 12, "partition": "2015/03/16", "history": [-1]}"""
     val col22: String = s"""{"timestamp": 2.0, "_row_key": "${uuid2}", "name": "p2", "location": 14, "partition": "2015/03/16", "history": [-1]}"""
@@ -118,5 +118,26 @@ class DataSourceTestMAS extends AssertionsForJUnit {
     assertEquals(2, hoodieROViewDF2.count()) // still 100, since we only updated
 
     hoodieROViewDF2.select("history", "location", "name", "partition", "timestamp").show(10, false)
+
+    // p1 -> 1, 3, 12, 15
+    // p2 -> 2, 5, 11, 14
+
+
+
+//    +----------------------+--------+----+----------+---------+
+//    |history               |location|name|partition |timestamp|
+//    +----------------------+--------+----+----------+---------+
+//    |[-1, 12, 15, 3, -1, 1]|15      |p1  |2015/03/16|3.0      |
+//    |[-1, 14, 11, 5, -1, 2]|11      |p2  |2015/03/16|3.0      |
+//    +----------------------+--------+----+----------+---------+
+
+
+//    +----------------------+--------+----+----------+---------+
+//    |history               |location|name|partition |timestamp|
+//    +----------------------+--------+----+----------+---------+
+//    |[-1, 12, 15, 3, -1, 1]|15      |p1  |2015/03/16|3.0      |
+//    |[-1, 14, 11, 5, -1, 2]|11      |p2  |2015/03/16|3.0      |
+//    +----------------------+--------+----+----------+---------+
+
   }
 }

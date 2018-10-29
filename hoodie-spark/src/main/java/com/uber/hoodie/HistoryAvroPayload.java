@@ -81,11 +81,11 @@ public class HistoryAvroPayload extends BaseAvroPayload implements
       //      ((GenericArray) this.record.get("history")).add(l1);
 
       if (this.record.get("history") instanceof GenericArray) {
-        ((GenericArray) this.record.get("history")).add(l2);
-//        ((GenericArray) this.record.get("history")).add(l1);
+//        ((GenericArray) this.record.get("history")).add(l2);
+        ((GenericArray) this.record.get("history")).add(l1);
       } if (this.record.get("history") instanceof ArrayList) {
-        ((ArrayList) this.record.get("history")).add(l2);
-//        ((ArrayList) this.record.get("history")).add(l1);
+//        ((ArrayList) this.record.get("history")).add(l2);
+        ((ArrayList) this.record.get("history")).add(l1);
       }
 
       //      history = Lists.newArrayList(Iterables.concat(another.history, this.history));
@@ -112,6 +112,6 @@ public class HistoryAvroPayload extends BaseAvroPayload implements
 
   @Override
   public Optional<IndexedRecord> getInsertValue(Schema schema) {
-    return Optional.empty();
+    return Optional.of(HoodieAvroUtils.rewriteRecord(record, schema));
   }
 }
