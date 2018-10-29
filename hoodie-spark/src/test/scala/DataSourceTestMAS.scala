@@ -70,6 +70,8 @@ class DataSourceTestMAS extends AssertionsForJUnit {
     val col2: String = s"""{"timestamp": 0.0, "_row_key": "${uuid2}", "name": "p2", "location": 2, "partition": "2015/03/16", "history": [-1]}"""
     val col4: String = s"""{"timestamp": 1.0, "_row_key": "${uuid2}", "name": "p2", "location": 5, "partition": "2015/03/16", "history": [-1]}"""
 
+//    val tb = List(col1, col2)
+//    val tb = List(col1, col2, col3)
     val tb = List(col1, col2, col3, col4)
     val inputDF1: Dataset[Row] = spark.read.json(spark.sparkContext.parallelize(tb, 2))
     inputDF1.write.format("com.uber.hoodie")
@@ -91,7 +93,11 @@ class DataSourceTestMAS extends AssertionsForJUnit {
 
     val col21: String = s"""{"timestamp": 2.0, "_row_key": "${uuid1}", "name": "p1", "location": 12, "partition": "2015/03/16", "history": [-1]}"""
     val col22: String = s"""{"timestamp": 2.0, "_row_key": "${uuid2}", "name": "p2", "location": 14, "partition": "2015/03/16", "history": [-1]}"""
-    val tb2 = List(col21, col22)
+    val col23: String = s"""{"timestamp": 3.0, "_row_key": "${uuid2}", "name": "p2", "location": 11, "partition": "2015/03/16", "history": [-1]}"""
+    val col24: String = s"""{"timestamp": 3.0, "_row_key": "${uuid1}", "name": "p1", "location": 15, "partition": "2015/03/16", "history": [-1]}"""
+//    val tb2 = List(col21, col22)
+//    val tb2 = List(col21, col22, col23)
+    val tb2 = List(col21, col22, col23, col24)
     val inputDF2: Dataset[Row] = spark.read.json(spark.sparkContext.parallelize(tb2, 2))
     val uniqueKeyCnt = inputDF2.select("_row_key").distinct().count()
 
@@ -111,6 +117,6 @@ class DataSourceTestMAS extends AssertionsForJUnit {
       .load(basePath + "/*/*/*/*");
     assertEquals(2, hoodieROViewDF2.count()) // still 100, since we only updated
 
-    hoodieROViewDF2.show()
+    hoodieROViewDF2.select("history", "location", "name", "partition", "timestamp").show(10, false)
   }
 }
