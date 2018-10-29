@@ -21,10 +21,12 @@ package com.uber.hoodie;
 import com.uber.hoodie.common.model.HoodieRecordPayload;
 import com.uber.hoodie.common.util.HoodieAvroUtils;
 import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.IndexedRecord;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -35,6 +37,7 @@ import java.util.Optional;
  */
 public class HistoryAvroPayload extends BaseAvroPayload implements
     HoodieRecordPayload<HistoryAvroPayload> {
+//  public List<?> history = Collections.singletonList(-1);
 
   /**
    * @param record
@@ -52,8 +55,22 @@ public class HistoryAvroPayload extends BaseAvroPayload implements
   public HistoryAvroPayload preCombine(HistoryAvroPayload another) {
     // pick the payload with greatest ordering value
     if (another.orderingVal.compareTo(orderingVal) > 0) {
+      Long l1 = (Long) another.record.get("location");
+      Long l2 = (Long) this.record.get("location");
+
+      ((GenericArray) another.record.get("history")).add(l1);
+      ((GenericArray) another.record.get("history")).add(l2);
+
+//      another.history = Lists.newArrayList(Iterables.concat(another.history, this.history));
       return another;
     } else {
+      Long l1 = (Long) another.record.get("location");
+      Long l2 = (Long) this.record.get("location");
+
+      ((GenericArray) this.record.get("history")).add(l2);
+      ((GenericArray) this.record.get("history")).add(l1);
+
+//      history = Lists.newArrayList(Iterables.concat(another.history, this.history));
       return this;
     }
   }
@@ -61,9 +78,10 @@ public class HistoryAvroPayload extends BaseAvroPayload implements
   @Override
   public Optional<IndexedRecord> combineAndGetUpdateValue(IndexedRecord currentValue, Schema schema)
       throws IOException {
-    // combining strategy here trivially ignores currentValue on disk and writes this record
-    Optional<IndexedRecord> idx = getInsertValue(schema);
-    return idx;
+    Long location1 = (Long) record.get("location");
+    ((ArrayList) ((GenericRecord) currentValue).get("history")).add(location1);
+
+    return Optional.of(currentValue);
   }
 
   @Override
