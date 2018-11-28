@@ -74,6 +74,7 @@ public class HistoryAvroPayload extends BaseAvroPayload
     this(record.get(), (record1) -> 0); // natural order
   }
 
+  //  original
   public HistoryAvroPayload preCombine(HistoryAvroPayload another) {
     if (another.orderingVal.compareTo(orderingVal) > 0) {
       Long l1 = (Long) another.record.get("location");
@@ -81,10 +82,17 @@ public class HistoryAvroPayload extends BaseAvroPayload
 
       if (another.record.get("history") instanceof GenericArray) {
         ((GenericArray) another.record.get("history")).add(ser(l2, orderingVal.toString()));
-        //        ((GenericArray) another.record.get("history")).add(ser(l1, another.orderingVal.toString()));
+
+        //        ((GenericArray) another.record.get("history")).add(ser(l1,
+        // another.orderingVal.toString()));
       } else if (another.record.get("history") instanceof ArrayList) {
+        // below
         ((ArrayList) another.record.get("history")).add(ser(l2, orderingVal.toString()));
-        //        ((ArrayList) another.record.get("history")).add(ser(l1, another.orderingVal.toString()));
+
+        //        ((ArrayList) another.record.get("history")).add("+0" + ser(l2,
+        // orderingVal.toString()));
+        //        ((ArrayList) another.record.get("history")).add("+0" + ser(l1,
+        // another.orderingVal.toString()));
       }
 
       //      another.history = Lists.newArrayList(Iterables.concat(another.history, this.history));
@@ -98,9 +106,15 @@ public class HistoryAvroPayload extends BaseAvroPayload
 
       if (this.record.get("history") instanceof GenericArray) {
         //        ((GenericArray) this.record.get("history")).add(ser(l2, orderingVal.toString()));
+
         ((GenericArray) this.record.get("history")).add(ser(l1, another.orderingVal.toString()));
       } else if (this.record.get("history") instanceof ArrayList) {
-        //        ((ArrayList) this.record.get("history")).add(ser(l2, orderingVal.toString()));
+        //        ((ArrayList) this.record.get("history")).add("0" + ser(l2,
+        // orderingVal.toString()));
+        //        ((ArrayList) this.record.get("history")).add("+0" + ser(l1,
+        // another.orderingVal.toString()));
+
+        // below
         ((ArrayList) this.record.get("history")).add(ser(l1, another.orderingVal.toString()));
       }
 
@@ -109,17 +123,90 @@ public class HistoryAvroPayload extends BaseAvroPayload
     }
   }
 
-  public List<String> mergeListElem(List<String> origin, String newElem) {
-    origin.add(newElem);
+  //  public HistoryAvroPayload preCombine(HistoryAvroPayload another) {
+  ////    if (another.orderingVal.compareTo(orderingVal) > 0) {
+  //      Long l1 = (Long) another.record.get("location");
+  //      Long l2 = (Long) this.record.get("location");
+  //
+  //      if (another.record.get("history") instanceof GenericArray) {
+  //        ((GenericArray) another.record.get("history")).add(ser(l2, orderingVal.toString()));
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //        //        ((GenericArray) another.record.get("history")).add(ser(l1,
+  // another.orderingVal.toString()));
+  //      }
+  //      else if (another.record.get("history") instanceof ArrayList) {
+  //        //below
+  //        ((ArrayList) another.record.get("history")).add(ser(l2, orderingVal.toString()));
+  //
+  //
+  //
+  //
+  //        //        ((ArrayList) another.record.get("history")).add("+0" + ser(l2,
+  // orderingVal.toString()));
+  //        //        ((ArrayList) another.record.get("history")).add("+0" + ser(l1,
+  // another.orderingVal.toString()));
+  //      }
+  //
+  //      //      another.history = Lists.newArrayList(Iterables.concat(another.history,
+  // this.history));
+  //      return another;
+  ////    } else {
+  ////      Long l1 = (Long) another.record.get("location");
+  ////      Long l2 = (Long) this.record.get("location");
+  ////
+  ////      //      ((GenericArray) this.record.get("history")).add(l2);
+  ////      //      ((GenericArray) this.record.get("history")).add(l1);
+  ////
+  ////      if (this.record.get("history") instanceof GenericArray) {
+  ////        //        ((GenericArray) this.record.get("history")).add(ser(l2,
+  // orderingVal.toString()));
+  ////
+  ////
+  ////
+  ////
+  ////
+  ////
+  ////        ((GenericArray) this.record.get("history")).add(ser(l1,
+  // another.orderingVal.toString()));
+  ////      }
+  ////      else if (this.record.get("history") instanceof ArrayList) {
+  ////        //        ((ArrayList) this.record.get("history")).add("0" + ser(l2,
+  // orderingVal.toString()));
+  ////        //        ((ArrayList) this.record.get("history")).add("0" + ser(l1,
+  // another.orderingVal.toString()));
+  ////
+  ////
+  ////
+  ////
+  ////        //below
+  ////        ((ArrayList) this.record.get("history")).add(ser(l1, another.orderingVal.toString()));
+  ////      }
+  ////
+  ////      //      history = Lists.newArrayList(Iterables.concat(another.history, this.history));
+  ////      return this;
+  ////    }
+  //  }
 
-    return origin
-        .stream()
-        .map((elem) -> deSer(elem))
-        .sorted(
-            (cmp1, cmp2) -> Double.valueOf(cmp2.getKey()).compareTo(Double.valueOf(cmp1.getKey())))
-        .map((pair) -> serString(pair))
-        .collect(Collectors.toList());
-  }
+  //  public List<String> mergeListElem(List<String> origin, String newElem) {
+  //    origin.add(newElem);
+  //
+  //    return origin
+  //        .stream()
+  //        .map((elem) -> deSer(elem))
+  //        .sorted(
+  //            (cmp1, cmp2) ->
+  // Double.valueOf(cmp2.getKey()).compareTo(Double.valueOf(cmp1.getKey())))
+  //        .map((pair) -> serString(pair))
+  //        .collect(Collectors.toList());
+  //  }
 
   public List<Utf8> mergeListList(List<String> origin, List<String> newList) {
     //    origin.addAll(newList);
@@ -155,12 +242,11 @@ public class HistoryAvroPayload extends BaseAvroPayload
     Double ts1 = (Double) record.get("timestamp");
     Double ts2 = (Double) ((GenericRecord) currentValue).get("timestamp");
 
-
     List<Utf8> array1 = ((ArrayList) ((GenericRecord) currentValue).get("history"));
 
     List<String> array11 = new ArrayList<>();
 
-    for (Utf8 a: array1) {
+    for (Utf8 a : array1) {
       array11.add(a.toString());
     }
 
@@ -173,13 +259,19 @@ public class HistoryAvroPayload extends BaseAvroPayload
     // location2.toString());
     //      array22.add(((GenericRecord) record).get("timestamp") + "#" + location1.toString());
     //    }
+    //    /************
+    //     *
+    //    if (array22.size() == 0 && array1.size() == 0) {
+    //      array22.add(((GenericRecord) currentValue).get("timestamp") + "#" +
+    // location2.toString());
+    //    }
 
-    if (array22.size() == 0 && array1.size() == 0) {
-      array22.add(((GenericRecord) currentValue).get("timestamp") + "#" + location2.toString());
-    }
-
+    //    ****************/
     //    if (array1.size() == 0 ) {
-    array11.add(record.get("timestamp") + "#" + location1.toString());
+    //    /*
+    //
+    //    array11.add(record.get("timestamp") + "#" + location1.toString());
+    //    */
     //      array22.add(((GenericRecord) currentValue).get("timestamp") + "#" +
     // location2.toString());
     //    }
@@ -206,12 +298,30 @@ public class HistoryAvroPayload extends BaseAvroPayload
     //    }
     //
     record.put("history", resultArray);
-
     return Optional.of(HoodieAvroUtils.rewriteRecord(record, schema));
   }
 
   @Override
   public Optional<IndexedRecord> getInsertValue(Schema schema) {
+    Long location1 = (Long) record.get("location");
+    Double ts1 = (Double) record.get("timestamp");
+    //    if (((GenericData.Array) record.get("history")).size() == 0) {
+    //      ((GenericData.Array) record.get("history")).add("9999999" + ts1.toString() + "#" +
+    // location1.toString());
+    ((GenericData.Array) record.get("history")).add(ts1.toString() + "#" + location1.toString());
     return Optional.of(HoodieAvroUtils.rewriteRecord(record, schema));
   }
+
+  //  @Override
+  //  public Optional<IndexedRecord> getInsertValue(Schema schema) {
+  //    Long location1 = (Long) record.get("location");
+  //    Double ts1 = (Double) record.get("timestamp");
+  //    if (((GenericData.Array) record.get("history")).size() <= 1) {
+  //      ((GenericData.Array) record.get("history")).add("+" + ts1.toString() + "#" +
+  // location1.toString());
+  ////      ((GenericData.Array) record.get("history")).add(ts1.toString() + "#" +
+  // location1.toString());
+  //    }
+  //    return Optional.of(HoodieAvroUtils.rewriteRecord(record, schema));
+  //  }
 }
